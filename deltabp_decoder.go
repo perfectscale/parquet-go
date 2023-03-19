@@ -41,6 +41,11 @@ func (d *deltaBitPackDecoder32) init(r io.Reader) error {
 		return err
 	}
 
+	// if there is only one value, we don't need to read the rest of the header
+	if d.valuesCount == 1 {
+		return nil
+	}
+
 	if err := d.readMiniBlockHeader(); err != nil {
 		return err
 	}
@@ -117,7 +122,7 @@ func (d *deltaBitPackDecoder32) next() (int32, error) {
 	}
 
 	// need new byte?
-	if d.position%8 == 0 {
+	if d.valuesCount > 1 && d.position%8 == 0 {
 		// do we need to advance a mini block?
 		if d.position%d.miniBlockValueCount == 0 {
 			// do we need to advance a big block?
@@ -200,6 +205,11 @@ func (d *deltaBitPackDecoder64) init(r io.Reader) error {
 		return err
 	}
 
+	// if there is only one value, we don't need to read the header
+	if d.valuesCount == 1 {
+		return nil
+	}
+
 	if err := d.readMiniBlockHeader(); err != nil {
 		return err
 	}
@@ -276,7 +286,7 @@ func (d *deltaBitPackDecoder64) next() (int64, error) {
 	}
 
 	// need new byte?
-	if d.position%8 == 0 {
+	if d.valuesCount > 1 && d.position%8 == 0 {
 		// do we need to advance a mini block?
 		if d.position%d.miniBlockValueCount == 0 {
 			// do we need to advance a big block?
